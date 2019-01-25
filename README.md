@@ -51,7 +51,8 @@ Here is the overall process:
       =================================================================
 
       ## Loss and accuracy trends
-      ![Image](/images/loas_accuracy_trend.png)
+  
+  ![Image](/images/loas_accuracy_trend.png)
 
 * Evaluate the model using test data. Here is the train and test results (confusin matrix, F1 scores, etc.)
 
