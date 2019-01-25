@@ -1,17 +1,16 @@
 # Pattern Recognition CNN Model
-Many Hi-Tech or semi conductor industry classifying defects patterns and as well as location of defects are important to identify which resource/equipment causing these defects. Keeping this in mind Patteren recognition CNN models classify different shapes and as well as predicts where these shapes occurred. This problem divided into 2 steps.
+Many Hi-Tech or semiconductor industry classifying defects patterns and as well as location of defects are important to identify which resource/equipment causing these defects. Keeping this in mind Pattern recognition CNN models classify different shapes and as well as predicts where these shapes occurred. This problem divided into 2 steps.
 * Classify the shapes
 * Predicts the points
 
 Here is the overall process:
 * Generate synthetic image data of various images
 
-      Generated 256x256 pixels images of shapes(circle, rectangle/squer, line, and no shape)
+      Generated 256x256 pixels images of shapes (circle, rectangle/square, line, and no shape)
  * Generate numpy array of images and randomize the data (which is very important)
  
       Shape of the arrays nx256x256x1
-      As we are dealing with dectects color is not important and hence drop other 2 channels and update image array such that cell 
-      which has shape pixel turn it to '1' otherwise '0', sothat learning algorithem learn much faster.
+      As we are dealing with detects color is not important and hence drop other 2 channels and update image array such that cell which has shape pixel turn it to '1' otherwise '0', so that learning algorithm learn much faster.
 * Train classification model. Here is the classification model network
       
       _________________________________________________________________
@@ -54,7 +53,7 @@ Here is the overall process:
   
   ![Image](/images/loas_accuracy_trend.png)
 
-* Evaluate the model using test data. Here is the train and test results (confusin matrix, F1 scores, etc.)
+* Evaluate the model using test data. Here is the train and test results (confusion matrix, F1 scores, etc.)
 
       ## train
       confusion matrix:
@@ -63,7 +62,7 @@ Here is the overall process:
        [   0   33 3162    6]
        [   7    3    3 3413]]
        
-      classification_report:
+      classification report:
                      precision    recall  f1-score   support
 
                0.0       1.00      1.00      1.00      2550
@@ -82,7 +81,7 @@ Here is the overall process:
        [   0   41 1026   13]
        [  11    7    2 1440]]
        
-      classification_report:
+      classification report:
                      precision    recall  f1-score   support
 
                0.0       0.99      1.00      0.99      1000
