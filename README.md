@@ -1,7 +1,7 @@
 # Pattern Recognition CNN Model
 Many Hi-Tech or semiconductor industry classifying defects patterns and as well as location of defects are important to identify which resource/equipment causing these defects. Keeping this in mind Pattern recognition CNN models classify different shapes and as well as predicts where these shapes occurred. This problem divided into 2 steps.
-* Classify the shapes
-* Predicts the points
+* Classify shapes
+* Predicts points
 
 Here is the overall process:
 * Generate synthetic image data of various images
