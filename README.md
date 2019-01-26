@@ -99,6 +99,7 @@ Based on the results model has overfits the training data.
 ## Next Steps:
 
       Retrain the model using regularization/dropout units. Retrain using different model/network.
+      Train model to predict shape points
 
 ## Some of images
 ![Image](/images/shapeImage2.png) ![Image](/images/shapeImage1.png) 
