@@ -100,3 +100,8 @@ Based on the results model has overfits the training data.
 
       Retrain the model using regularization/dropout units. Retrain using different model/network.
 
+## Some of images
+![Image](/images/shapeImage2.png) ![Image](/images/shapeImage1.png) 
+![Image](/images/shapeImage3.png) ![Image](/images/shapeImage4.png) 
+![Image](/images/shapeImage5.png)
+
