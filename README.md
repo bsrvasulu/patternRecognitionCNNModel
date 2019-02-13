@@ -98,6 +98,61 @@ Based on the results model has overfits the training data.
 
 ## Predict back shape Points
 In this step predict the points of the classified shape. Train the data for each shape separately. Tried with input and output has the same shape but the results are not good (accuracy is about 0.79). Tried with input shape as 256x256 and output as 128x128 with this performance increased but not significantly. Reduced the output shape to 64x64 then CNN model predict back the points more accurately.
+Here is the predict back points model network
+      _________________________________________________________________
+      Layer (type)                 Output Shape              Param #   
+      =================================================================
+      input_1 (InputLayer)         (None, 256, 256, 1)       0         
+      _________________________________________________________________
+      conv2d_1 (Conv2D)            (None, 256, 256, 8)       40        
+      _________________________________________________________________
+      batch_normalization_1 (Batch (None, 256, 256, 8)       32        
+      _________________________________________________________________
+      activation_1 (Activation)    (None, 256, 256, 8)       0         
+      _________________________________________________________________
+      max_pooling2d_1 (MaxPooling2 (None, 256, 256, 8)       0         
+      _________________________________________________________________
+      conv2d_2 (Conv2D)            (None, 256, 256, 8)       264       
+      _________________________________________________________________
+      batch_normalization_2 (Batch (None, 256, 256, 8)       32        
+      _________________________________________________________________
+      activation_2 (Activation)    (None, 256, 256, 8)       0         
+      _________________________________________________________________
+      max_pooling2d_2 (MaxPooling2 (None, 128, 128, 8)       0         
+      _________________________________________________________________
+      conv2d_3 (Conv2D)            (None, 128, 128, 16)      2064      
+      _________________________________________________________________
+      batch_normalization_3 (Batch (None, 128, 128, 16)      64        
+      _________________________________________________________________
+      activation_3 (Activation)    (None, 128, 128, 16)      0         
+      _________________________________________________________________
+      max_pooling2d_3 (MaxPooling2 (None, 128, 128, 16)      0         
+      _________________________________________________________________
+      conv2d_4 (Conv2D)            (None, 128, 128, 16)      4112      
+      _________________________________________________________________
+      batch_normalization_4 (Batch (None, 128, 128, 16)      64        
+      _________________________________________________________________
+      activation_4 (Activation)    (None, 128, 128, 16)      0         
+      _________________________________________________________________
+      max_pooling2d_4 (MaxPooling2 (None, 64, 64, 16)        0         
+      _________________________________________________________________
+      conv2d_5 (Conv2D)            (None, 64, 64, 32)        32800     
+      _________________________________________________________________
+      batch_normalization_5 (Batch (None, 64, 64, 32)        128       
+      _________________________________________________________________
+      activation_5 (Activation)    (None, 64, 64, 32)        0         
+      _________________________________________________________________
+      max_pooling2d_5 (MaxPooling2 (None, 64, 64, 32)        0         
+      _________________________________________________________________
+      conv2d_6 (Conv2D)            (None, 64, 64, 1)         33        
+      _________________________________________________________________
+      activation_6 (Activation)    (None, 64, 64, 1)         0         
+      =================================================================
+      Total params: 39,633
+      Trainable params: 39,473
+      Non-trainable params: 160
+      _________________________________________________________________
+
 
 * Shape: Circle. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
