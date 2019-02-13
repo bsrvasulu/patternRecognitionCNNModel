@@ -128,6 +128,8 @@ In this step predict the points of the classified shape. Train the data for each
          micro avg       0.99      0.99      0.99      5000
          macro avg       0.99      0.98      0.99      5000
       weighted avg       0.99      0.99      0.99      5000
+      One of the best and not perfect prediction from test data
+      ![Image](/images/circle_prediction_accurate.png) ![Image](/images/circle_prediction_Not perfect.png) 
 
 * Shape: Rectangle. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
@@ -158,6 +160,9 @@ In this step predict the points of the classified shape. Train the data for each
          micro avg       0.99      0.99      0.99      5000
          macro avg       1.00      0.98      0.99      5000
       weighted avg       0.99      0.99      0.99      5000
+      
+      One of the best and not perfect prediction from test data
+      ![Image](/images/rectangle_prediction_accurate.png) ![Image](/images/rectangle_prediction_Not perfect.png) 
 
 * Shape: Line. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
@@ -189,7 +194,8 @@ In this step predict the points of the classified shape. Train the data for each
          macro avg       1.00      1.00      1.00      5000
       weighted avg       1.00      1.00      1.00      5000
 
-
+      One of the best and not perfect prediction from test data
+      ![Image](/images/line_prediction_accurate.png) ![Image](/images/line_prediction_Not perfect.png) 
 
 ## Next Steps:
 
