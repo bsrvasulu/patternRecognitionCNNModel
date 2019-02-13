@@ -96,10 +96,70 @@ Here is the overall process:
 
 Based on the results model has overfits the training data.
 
-## Predict Points
+## Predict back shape Points
 In this step predict the points of the classified shape. Train the data for each shape separately. Tried with input and output has the same shape but the results are not good (accuracy is about 0.79). Tried with input shape as 256x256 and output as 128x128 with this performance increased but not significantly. Reduced the output shape to 64x64 then CNN model predict back the points more accurately.
 
-* Shape: Line. Here is the train and test results (confusion matrix, F1 scores, etc.)
+* Shape: Circle. Here are the train and test results (confusion matrix, F1 scores, etc.)
+
+      ## train
+      confusion matrix:
+       [[9179    0]
+       [  78 3493]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       0.99      1.00      1.00      9179
+               1.0       1.00      0.98      0.99      3571
+
+         micro avg       0.99      0.99      0.99     12750
+         macro avg       1.00      0.99      0.99     12750
+      weighted avg       0.99      0.99      0.99     12750
+
+      ## test
+      confusion matrix:
+       [[3540    0]
+       [  59 1401]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       0.98      1.00      0.99      3540
+               1.0       1.00      0.96      0.98      1460
+
+         micro avg       0.99      0.99      0.99      5000
+         macro avg       0.99      0.98      0.99      5000
+      weighted avg       0.99      0.99      0.99      5000
+
+* Shape: Rectangle. Here are the train and test results (confusion matrix, F1 scores, etc.)
+
+      ## train
+      confusion matrix:
+       [[9547    0]
+       [  11 3192]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       1.00      1.00      1.00      9547
+               1.0       1.00      1.00      1.00      3203
+
+         micro avg       1.00      1.00      1.00     12750
+         macro avg       1.00      1.00      1.00     12750
+      weighted avg       1.00      1.00      1.00     12750
+
+      ## test
+      confusion matrix:
+       [[3920    0]
+       [  39 1041]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       0.99      1.00      1.00      3920
+               1.0       1.00      0.96      0.98      1080
+
+         micro avg       0.99      0.99      0.99      5000
+         macro avg       1.00      0.98      0.99      5000
+      weighted avg       0.99      0.99      0.99      5000
+
+* Shape: Line. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
       ## train
       confusion matrix:
