@@ -187,7 +187,7 @@ Here is the predict back points model network
          macro avg       0.99      0.98      0.99      5000
       weighted avg       0.99      0.99      0.99      5000
       One of the best and not perfect prediction from test data
-      ![Image](/images/circle_prediction_accurate.png) ![Image](/images/circle_prediction_Not perfect.png) 
+![Image](/images/circle_prediction_accurate.png) ![Image](/images/circle_prediction_not_perfect.png) 
 
 * Shape: Rectangle. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
@@ -220,7 +220,7 @@ Here is the predict back points model network
       weighted avg       0.99      0.99      0.99      5000
       
       One of the best and not perfect prediction from test data
-      ![Image](/images/rectangle_prediction_accurate.png) ![Image](/images/rectangle_prediction_Not perfect.png) 
+![Image](/images/rectangle_prediction_accurate.png) ![Image](/images/rectangle_prediction_not_perfect.png) 
 
 * Shape: Line. Here are the train and test results (confusion matrix, F1 scores, etc.)
 
@@ -253,7 +253,7 @@ Here is the predict back points model network
       weighted avg       1.00      1.00      1.00      5000
 
       One of the best and not perfect prediction from test data
-      ![Image](/images/line_prediction_accurate.png) ![Image](/images/line_prediction_Not perfect.png) 
+![Image](/images/line_prediction_accurate.png) ![Image](/images/line_prediction_not_perfect.png) 
 
 ## Next Steps:
 
