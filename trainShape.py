@@ -38,17 +38,17 @@ class LossHistory(keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         self.lossObj = LossObj() 
         self.lossObj.losses = []
-        #self.lossObj.dice_coef = []
+        self.lossObj.dice_coef = []
         self.lossObj.accuracy = []
         
     def on_epoch_end(self, batch, logs={}):
         self.lossObj.losses.append(logs.get('loss'))
-        #self.lossObj.dice_coef.append(logs.get('dice_coef_mod'))  
+        self.lossObj.dice_coef.append(logs.get('dice_coef_mod'))  
         self.lossObj.accuracy.append(logs.get('acc'))  
         
     def on_batch_end(self, batch, logs={}):
         self.lossObj.losses.append(logs.get('loss'))
-        #self.lossObj.dice_coef.append(logs.get('dice_coef_mod'))  
+        self.lossObj.dice_coef.append(logs.get('dice_coef_mod'))  
         self.lossObj.accuracy.append(logs.get('acc'))  
         
     def get_LossObj(self):
@@ -110,11 +110,12 @@ class trainShapes(object):
         conv3 = Activation('relu')(conv3)
 
         model = Model(inputs = inputs, outputs = conv3)
-        #model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss_mod,metrics=[dice_coef_mod])
-        model.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
+        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss_mod,metrics=[dice_coef_mod])
+        #model.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
         return model
- 
-    def prepare_network_chanal_last_classification_2(self, classes = 4):
+    
+    
+    def prepare_network_chanal_last_reduced_size(self):
         inputs = Input((self.img_rows, self.img_cols, self.num_channels))
 
         # zero padding
@@ -133,7 +134,7 @@ class trainShapes(object):
         conv1 = Conv2D(16, (4, 4), padding='same', data_format='channels_last')(pool01)
         conv1 = BatchNormalization(axis = 3)(conv1)
         conv1 = Activation('relu')(conv1)        
-        pool1 = MaxPooling2D((4, 4), strides=(2, 2), padding='same', data_format='channels_last')(conv1)
+        pool1 = MaxPooling2D((4, 4), strides=(1, 1), padding='same', data_format='channels_last')(conv1)
         
         conv11 = Conv2D(16, (4, 4), padding='same', data_format='channels_last')(pool1)
         conv11 = BatchNormalization(axis = 3)(conv11)
@@ -143,28 +144,16 @@ class trainShapes(object):
         conv2 = Conv2D(32, (8, 8), padding='same', data_format='channels_last')(pool11)
         conv2 = BatchNormalization(axis = 3)(conv2)
         conv2 = Activation('relu')(conv2)        
-        pool2 = MaxPooling2D((8, 8), strides=(2, 2), padding='same', data_format='channels_last')(conv2)
-        
-        conv3 = Conv2D(32, (2, 2), padding='same', data_format='channels_last')(pool2)
-        conv3 = BatchNormalization(axis = 3)(conv3)
-        conv3 = Activation('relu')(conv3)        
-        pool3 = MaxPooling2D((2, 2), strides=(2, 2), padding='same', data_format='channels_last')(conv3)
-        
+        pool2 = MaxPooling2D((8, 8), strides=(1, 1), padding='same', data_format='channels_last')(conv2)
 
-        conv4 = Conv2D(1, (1, 1), padding='same',data_format='channels_last')(pool3)
-        conv4 = Activation('relu')(conv4)
+        conv3 = Conv2D(1, (1, 1), padding='same',data_format='channels_last')(pool2)
+        conv3 = Activation('relu')(conv3)
 
-        # output layer
-        X = Flatten()(conv4)
-        X = Dense(classes, activation='softmax', name='fc' + str(classes), kernel_initializer = glorot_uniform(seed=0))(X)
-        #X = Dense(classes, activation=keras.activations.softmax(X, dim=axis), name='fc' + str(classes), kernel_initializer = glorot_uniform(seed=0))(X)
-        
-
-        # Create model
-        model = Model(inputs = inputs, outputs = X, name='Shapes4')
-        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+        model = Model(inputs = inputs, outputs = conv3)
+        model.compile(optimizer=Adam(lr=1e-4), loss=dice_coef_loss_mod,metrics=[dice_coef_mod])
+        #model.compile(optimizer='adam', loss='mse',metrics=['accuracy'])
         return model
-
+ 
     def prepare_network_chanal_last_classification(self, classes = 4):
         inputs = Input((self.img_rows, self.img_cols, self.num_channels))
 
@@ -217,12 +206,12 @@ class trainShapes(object):
         with open(filename, 'wb') as output:  # Overwrites any existing file.
             pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
-    def noiseImagesXY(self, count=20):
+    def noiseImagesXY(self, count=20, shape=(256, 256)):
         X_data = []
         Y_data = []
         for entry in range(count): 
             X = np.zeros([256, 256, 1], dtype="float_")
-            Y_data.append(X.copy())
+            Y_data.append(np.zeros([shape[0], shape[1], 1], dtype="float_"))
             num_noise = np.random.randint(20,256*5)
             pt_random = np.random.randint(0, 255, (num_noise, 2))           
             for (i, j) in pt_random:
@@ -288,15 +277,31 @@ class trainShapes(object):
         y = np.zeros(X.shape)
         return X, y    
  
+    def get_mody(self, y, y_class):
+        y_c = y_class
+        if(self.shape == 'CIRCLE'):
+            y_c = y_class == 1
+        elif(self.shape == 'RECTANGLE'):
+            y_c = y_class == 2
+        elif(self.shape == 'LINE'):
+            y_c = y_class == 3
+        
+        ym = y.reshape((y.shape[0], y.shape[1]*y.shape[2]*y.shape[3]))
+        ym = ym * y_c
+        
+        return ym.reshape(y.shape);
+        
+    
     def train_channel_last_classification(self):
         model = self.prepare_network_chanal_last_classification()
         print(model.summary())
         history = LossHistory()
         for iter in range(2):
-            for fileCount in range(49):
+            for fileCount in range(51):
                 print('File: ' + ".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
                 X = np.load(".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
-                y = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')                    
+                y = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')
+                #y_class = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')                                    
                 #X, y = train_shapes.readImagesXY_classification()
                 X_n, y_n = train_shapes.noiseImagesXY_clasification(int(len(X)/4))
                 X = np.concatenate((X, X_n), axis = 0)
@@ -322,7 +327,46 @@ class trainShapes(object):
         print("Saved model to disk")         
     
     
-    def train_channel_last(self):
+    def train_shape_channel_last(self):
+        model = self.prepare_network_chanal_last_reduced_size()
+        print(model.summary())
+        history = LossHistory()
+        for iter in range(2):
+            for fileCount in range(51):
+                '''
+                print('File: ' + ".\\npyXYFiles_size64\\X_data_" + str(fileCount)+ '.npy')
+                X = np.load(".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
+                y = np.load(".\\npyXYFiles\\y_data_" + str(fileCount)+ '.npy')
+                y_c = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')
+                '''
+                print('File: ' + "./npyXYFiles_size64/X_data_" + str(fileCount)+ '.npy')
+                X = np.load("./npyXYFiles_size64/X_data_" + str(fileCount)+ '.npy')
+                y = np.load("./npyXYFiles_size64/y_data_" + str(fileCount)+ '.npy')
+                y_c = np.load("./npyXYFiles_size64/y_data_class_" + str(fileCount)+ '.npy')
+                
+                y = self.get_mody(y, y_c)                    
+                X_n, y_n = train_shapes.noiseImagesXY(int(len(X)/4), shape=(y.shape[1], y.shape[2]))
+                X = np.concatenate((X, X_n), axis = 0)
+                y = np.concatenate((y, y_n), axis = 0)
+                X, y = train_shapes.randomData(X, y)
+                model.fit(X, y, batch_size=8, nb_epoch=20, verbose=1, callbacks=[history])
+                if fileCount % 10 == 0 :
+                    model.save(self.shape + '_' + str(iter) + '_' + str(fileCount) + '.h5')
+                    model_json = model.to_json()
+                    with open(self.shape + ".json", "w") as json_file:
+                        json_file.write(model_json)
+                    self.save_object(history.get_LossObj(), self.shape + '.pkl') 
+        # save model
+        # serialize model to JSON
+        model_json = model.to_json()
+        with open(self.shape + ".json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5       
+        model.save(self.shape + '.h5')
+        self.save_object(history.get_LossObj(), self.shape + '.pkl')
+        print("Saved model to disk")         
+    
+        '''
         model = self.prepare_network_chanal_last()
         print(model.summary())
         history = LossHistory()
@@ -347,7 +391,8 @@ class trainShapes(object):
         model.save(self.shape + '.h5')
         self.save_object(history.get_LossObj(), self.shape + '.pkl')
         print("Saved model to disk")           
-
+        '''
+        
     def retrieve_fitmodel_channel_last(self):
         # load json and create model
         json_file = open(self.shape + '.json', 'r')
@@ -399,10 +444,10 @@ class trainShapes(object):
         #y = train_shapes.one_hot_encodeing(y)
         y_t = []
         y_pt = []
-        for fileCount in range(49):
-            print('File: ' + ".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
-            X = np.load(".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
-            y = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')                    
+        for fileCount in range(20):
+            print('File: ' + ".\\npyXYFiles-test\\X_data_" + str(fileCount)+ '.npy')
+            X = np.load(".\\npyXYFiles-test\\X_data_" + str(fileCount)+ '.npy')
+            y = np.load(".\\npyXYFiles-test\\y_data_class_" + str(fileCount)+ '.npy')                    
             X_n, y_n = train_shapes.noiseImagesXY_clasification(int(len(X)/4))
             X = np.concatenate((X, X_n), axis = 0)
             y = np.concatenate((y, y_n), axis = 0)            
@@ -424,6 +469,214 @@ class trainShapes(object):
         confusion = confusion_matrix(y_t, y_pt)
         print('confusion matrix:\n', confusion)
         print('classification_report:\n', classification_report(y_t, y_pt))
+        
+    def calculate_stats_2(self):
+        # load json and create model
+        json_file = open(self.shape + '.json', 'r')
+        loaded_model_json = json_file.read()
+        json_file.close()
+        model = model_from_json(loaded_model_json)
+        # load weights into new model
+        model.load_weights(self.shape + '.h5')
+        
+        print("Loaded model from disk")
+        
+        # compile
+        model.compile(optimizer = 'adam', loss = dice_coef_loss_mod, metrics = [dice_coef_mod])
+        print(model.summary())
+        
+        m_pts = 0
+        e_points = 0
+        detected_pts = 0
+        missing_shapes = 0
+        noPattern_shapes = 0;
+        pattern_shapes = 0 
+        extra_detected_shapes = 0             
+        y_t = []
+        y_pt = []        
+        for fileCount in range(51):
+            '''
+            #test
+            print('File: ' + "./npyXYFiles-test-size64/X_data_" + str(fileCount)+ '.npy')
+            X = np.load("./npyXYFiles-test-size64/X_data_" + str(fileCount)+ '.npy')
+            y = np.load("./npyXYFiles-test-size64/y_data_" + str(fileCount)+ '.npy')
+            y_c = np.load("./npyXYFiles-test-size64/y_data_class_" + str(fileCount)+ '.npy')
+            '''
+            #training 
+            print('File: ' + "./npyXYFiles_size64/X_data_" + str(fileCount)+ '.npy')
+            X = np.load("./npyXYFiles_size64/X_data_" + str(fileCount)+ '.npy')
+            y = np.load("./npyXYFiles_size64/y_data_" + str(fileCount)+ '.npy')
+            y_c = np.load("./npyXYFiles_size64/y_data_class_" + str(fileCount)+ '.npy')
+            
+            y = self.get_mody(y, y_c)                    
+            X_n, y_n = train_shapes.noiseImagesXY(int(len(X)/4), shape=(y.shape[1], y.shape[2]))
+            X = np.concatenate((X, X_n), axis = 0)
+            y = np.concatenate((y, y_n), axis = 0)
+            X, y = train_shapes.randomData(X, y)
+            Yp = model.predict(X)
+            tempYp = Yp[:,:,:,0]*y[:,:,:,0]
+            idx = tempYp > 0.5
+            tempYp[idx] = 1.0
+            idx = tempYp <= 0.5
+            tempYp[idx] = 0.0  
+            
+            tempActYp = Yp[:,:,:,0]
+            idx = tempActYp > 0.5
+            tempActYp[idx] = 1.0
+            idx = tempActYp <= 0.5
+            tempActYp[idx] = 0.0   
+            
+            tempY = y[:,:,:,0]#*X[:,:,:,0]
+            yyp_result = tempYp*tempY            
+      
+            for i in range(0,len(X)):
+                tempYp_sum = np.sum(tempYp[i])
+                tempY_sum = np.sum(tempY[i])
+                yp_sum = np.sum(tempActYp[i])
+                if (tempY_sum == 0 and tempYp_sum > 7):
+                    extra_detected_shapes += 1
+                    '''                   
+                    print('Extra points detected: ', tempYp_sum)
+                    plt.figure(1)
+                    plt.subplot('121')
+                    plt.title('X')
+                    plt.imshow(X[i,:,:,0])
+                    plt.subplot('122')
+                    plt.title('y')
+                    plt.imshow(y[i,:,:,0])
+                    plt.show() 
+                    plt.figure(2)                    
+                    plt.subplot('121')
+                    plt.title('Yp')
+                    temp = tempActYp[i,:,:]#*X[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.subplot('122')
+                    plt.title('Yp * y')
+                    temp = tempActYp[i,:,:]*y[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.show() 
+                    '''                                         
+                elif tempY_sum != 0 and tempYp_sum == 0 :
+                    missing_shapes += 1
+                    '''
+                    print('Missing points count: ', tempY_sum)
+                    plt.figure(1)
+                    plt.subplot('121')
+                    plt.title('X')
+                    plt.imshow(X[i,:,:,0])
+                    plt.subplot('122')
+                    plt.title('y')
+                    plt.imshow(y[i,:,:,0])
+                    plt.show() 
+                    plt.figure(2)                    
+                    plt.subplot('121')
+                    plt.title('Yp')
+                    temp = tempActYp[i,:,:]#*X[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.subplot('122')
+                    plt.title('Yp * y')
+                    temp = tempActYp[i,:,:]*y[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.show() 
+                    '''                    
+                elif tempY_sum != 0 :
+                    pattern_shapes += 1
+                    '''
+                    print('Actual points count: ', tempY_sum)
+                    plt.figure(1)
+                    plt.subplot('121')
+                    plt.imshow(X[i,:,:,0])
+                    plt.title('X')
+                    plt.subplot('122')
+                    plt.imshow(y[i,:,:,0])
+                    plt.title('y')
+                    plt.show() 
+                    plt.figure(2)                    
+                    plt.subplot('121')
+                    temp = tempActYp[i,:,:]#*X[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0   
+                    plt.title('Yp')
+                    plt.imshow(temp)
+                    plt.subplot('122')
+                    temp = tempActYp[i,:,:]*y[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0  
+                    plt.title('Yp * y')
+                    plt.imshow(temp)
+                    plt.show()                     
+                    '''
+                else :
+                    noPattern_shapes += 1
+                    '''
+                    plt.figure(1)
+                    plt.subplot('121')
+                    plt.imshow(X[i,:,:,0])
+                    plt.subplot('122')
+                    plt.imshow(y[i,:,:,0])
+                    plt.show() 
+                    plt.figure(2)                    
+                    plt.subplot('121')
+                    temp = tempActYp[i,:,:]#*X[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.subplot('122')
+                    temp = tempActYp[i,:,:]*X[i,:,:,0]
+                    idx = temp > 0.5
+                    temp[idx] = 1.0
+                    idx = temp <= 0.5
+                    temp[idx] = 0.0                
+                    plt.imshow(temp)
+                    plt.show()    
+                    '''
+                    
+                yyp_result_sum = np.sum(yyp_result[i])
+                detected_pts += yyp_result_sum
+                m_pts += tempY_sum - yyp_result_sum
+                e_points += tempYp_sum - yyp_result_sum           
+            
+            
+            y_t = np.append(y_t, (np.sum(tempY.reshape(tempY.shape[0], tempY.shape[1]*tempY.shape[2]), axis=1) > 0))
+            y_pt = np.append(y_pt, (np.sum(tempYp.reshape(tempYp.shape[0], tempYp.shape[1]*tempYp.shape[2]), axis=1) > 7))
+            
+        print('-------------------------------------------------')
+        print('Stats - - -')
+        print('detected points: ', detected_pts)
+        print('Missing points: ', m_pts)
+        print('Extra Detected points: ', e_points)
+        print('Shape images: ', pattern_shapes)
+        print('No shape image: ', noPattern_shapes)
+        print('Missing images: ', missing_shapes)
+        print('Extra Detected images: ', extra_detected_shapes)          
+        print('-------------------------------------------------')      
+        
+        confusion = confusion_matrix(y_t, y_pt)
+        print('confusion matrix:\n', confusion)
+        print('classification_report:\n', classification_report(y_t, y_pt))
+        
 
     def calculate_stats(self):
         # load json and create model
@@ -630,11 +883,18 @@ class trainShapes(object):
             lossObj = pickle.load(input)  
             #print('lossObj.losses = ', lossObj.losses)
             #print('lossObj.dice_coef = ', lossObj.dice_coef)  
-            plt.title('Dice Coefficient')
+            plt.title('Loss trend')
             plt.xlabel('epoch count')
-            plt.ylabel('dice Coefficient')
+            plt.ylabel('Loss')
             #plt.plot(lossObj.dice_coef)
             plt.plot(lossObj.losses)
+            plt.show() 
+            
+            plt.title('Accuracy trend')
+            plt.xlabel('epoch count')
+            plt.ylabel('Accuracy')
+            #plt.plot(lossObj.dice_coef)
+            plt.plot(lossObj.accuracy)
             plt.show() 
             
     def saveDataXY(self, listDir=[]):
@@ -660,21 +920,51 @@ class trainShapes(object):
             plt.imshow(y_data[i, :, :, 0])
             plt.show()  
         
+    def getShape(self, shape):
+        switcher = {
+            0: 'No Shape',
+            1: 'Circle',
+            2: 'Rectangle/Square',
+            3: 'Line'
+            }
+        
+        return switcher.get(shape, 'No Shape')
+        
+    def showData10RandomShapes(self):
+        fileCount = np.random.randint(50)
+        X = np.load(".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
+        y = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')                    
+        X_n, y_n = train_shapes.noiseImagesXY_clasification(int(len(X)/4))
+        X = np.concatenate((X, X_n), axis = 0)
+        y = np.concatenate((y, y_n), axis = 0)
+        X, y = train_shapes.randomData(X, y)  
+        
+        random10 = np.random.randint(0, X.shape[0], 10)
+        for i in range(0,len(random10)):
+            print('Shape: ', self.getShape(y[random10[i]][0]))
+            plt.figure(1)
+            plt.subplot('111')
+            plt.imshow(X[random10[i], :, :, 0])
+            plt.show()         
+        
 if __name__ == '__main__':
     gpu_id = 0
     os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-    train_shapes = trainShapes(shape='CLASSIFICATION', dataDir = './train_images')
+    train_shapes = trainShapes(shape='RECTANGLE', dataDir = './train_images')
     #train_shapes.saveDataXY(listDir=['train_line_images_data', 'train_line_images _data_rotate_left', 'train_line_images_data_rotate_right', 'train_line_images_data_rotate_right_right'])
     #train_shapes.saveDataXY(listDir=['train_circles_images_data'])
     
-    train_shapes.train_channel_last_classification()
+    #train_shapes.train_channel_last_classification()
     #train_shapes.calculate_stats_classification()
     
-    #train_shapes.train_channel_last()
+    #train_shapes.train_shape_channel_last()
+    train_shapes.calculate_stats_2()
     #train_shapes.showDIceCoeffientTrend()
     #train_shapes = trainShapes(shape='CIRCLE', dataDir = './test_images')
     #train_shapes.calculate_stats()
     #print(train_shapes.onehot_encodeing())
+    
+    #train_shapes.showData10RandomShapes()
     
     #X, y = train_shapes.readNonClassImagesXY()
     #train_shapes.showDataXY(X, y)
@@ -691,4 +981,24 @@ if __name__ == '__main__':
     encode_y = train_shapes.one_hot_encodeing(y)
     X, y = train_shapes.randomData(X, encode_y)
     print(y[0:20])
+    '''
+    '''
+    fileCount = 0;
+    
+    X = np.load(".\\npyXYFiles\\X_data_" + str(fileCount)+ '.npy')
+    y = np.load(".\\npyXYFiles\\y_data_" + str(fileCount)+ '.npy')
+    y_class = np.load(".\\npyXYFiles\\y_data_class_" + str(fileCount)+ '.npy')
+    y_m = train_shapes.get_mody(y, y_class)
+    print(y_m.shape)
+    for i in range(len(X)):
+        plt.figure(1)
+        plt.subplot('121')
+        plt.imshow(X[i,:,:,0])
+        plt.subplot('122')
+        plt.imshow(y_m[i,:,:,0])
+        plt.show() 
+        plt.figure(2)                    
+        plt.subplot('121')
+        plt.imshow(y[i,:,:,0])
+        plt.show() 
     '''

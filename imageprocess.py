@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os, fnmatch
 from scipy import ndimage
+import PIL
 from PIL import Image
 from random import shuffle
 
@@ -28,6 +29,21 @@ class imageprocess(object):
         #plt.imshow(X)
         #plt.show()
         return X
+    
+    def convertImage_size(self, imageFileName, image_size):
+        #image = imageio.imread(imageFileName)
+        img = Image.open(imageFileName)
+        image_2 = img.resize(image_size, PIL.Image.ANTIALIAS)
+        image = np.array(image_2.getdata()).reshape(image_size[0], image_size[1], 4)
+        redImage = image[:, :, 0] == 0
+        image[redImage] = 255
+        redImage = image[:, :, 0] != 255
+        X = np.zeros([image_size[0], image_size[1], 1], dtype="float_")
+        X[redImage] = 1.0
+        #print(X.shape)
+        #plt.imshow(X)
+        #plt.show()
+        return X    
     
     def convertImagesXY(self):
         X_data = []
@@ -97,7 +113,7 @@ class imageprocess(object):
                     img = img.resize((256, 256))
                     img.save(".\\"+self.dataDir+"\\"+ entry.split('.')[0]+'_'+str(rotation)+'.'+entry.split('.')[1])   
 
-    def saveDataXY(self, dirList=[], xyDataDir=""):
+    def saveDataXY(self, dirList=[], xyDataDir="", y_size=None):
         X_data = []
         y_data = []
         y_data_classification = []
@@ -114,7 +130,10 @@ class imageprocess(object):
         npFileCount = 0;
         for patFile in  filesList: 
             X = self.convertImage(patFile)
-            y_data.append(X.copy())
+            if y_size != None:
+                y_data.append(self.convertImage_size(patFile, y_size).copy())
+            else:
+                y_data.append(X.copy())
             #np.concatenate((y_data, X.copy()), axis = 0)
             num_noise = np.random.randint(20,1024)
             pt_random = np.random.randint(0, 255, (num_noise, 2))           
@@ -151,9 +170,12 @@ class imageprocess(object):
 if __name__ == '__main__':
     #gpu_id = 0
     #os.environ['CUDA_VISIBLE_DEVICES'] = str(gpu_id)
-    imageProc = imageprocess(dataDir = 'train_rectangle_data')
+    imageProc = imageprocess(dataDir = 'temp2')
+    #imageProc.saveDataXY(dirList=['train_circles_images_data'], xyDataDir='npyXYFiles_size128', y_size=(128, 128))
+    #imageProc.saveDataXY(dirList=['train_circles_images_data', 'train_rectangle_data', 'train_line_images_data'], xyDataDir='npyXYFiles_size64', y_size=(64, 64))
     #imageProc.saveDataXY(dirList=['train_circles_images_data', 'train_rectangle_data', 'train_line_images_data'], xyDataDir='npyXYFiles')
-    imageProc.saveDataXY(dirList=['test_circle_images', 'test_line_images', 'test_rectangle_images'], xyDataDir='npyXYFiles-test')
+    #imageProc.saveDataXY(dirList=['test_circle_images', 'test_line_images', 'test_rectangle_images'], xyDataDir='npyXYFiles-test')
+    imageProc.saveDataXY(dirList=['test_circle_images', 'test_line_images', 'test_rectangle_images'], xyDataDir='npyXYFiles-test-size64', y_size=(64, 64))
     #imageProc.rotateImage([20])
     #imageProc.rotateImage([x * 5 for x in range(1, 73) ])
     '''
