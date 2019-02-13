@@ -96,6 +96,41 @@ Here is the overall process:
 
 Based on the results model has overfits the training data.
 
+## Predict Points
+In this step predict the points of the classified shape. Train the data for each shape separately. Tried with input and output has the same shape but the results are not good (accuracy is about 0.79). Tried with input shape as 256x256 and output as 128x128 with this performance increased but not significantly. Reduced the output shape to 64x64 then CNN model predict back the points more accurately.
+
+* Shape: Line. Here is the train and test results (confusion matrix, F1 scores, etc.)
+
+      ## train
+      confusion matrix:
+       [[9324    0]
+       [ 109 3317]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       0.99      1.00      0.99      9324
+               1.0       1.00      0.97      0.98      3426
+
+         micro avg       0.99      0.99      0.99     12750
+         macro avg       0.99      0.98      0.99     12750
+      weighted avg       0.99      0.99      0.99     12750
+
+      ## test
+      confusion matrix:
+       [[3540    0]
+       [   4 1456]]
+      classification_report:
+                     precision    recall  f1-score   support
+
+               0.0       1.00      1.00      1.00      3540
+               1.0       1.00      1.00      1.00      1460
+
+         micro avg       1.00      1.00      1.00      5000
+         macro avg       1.00      1.00      1.00      5000
+      weighted avg       1.00      1.00      1.00      5000
+
+
+
 ## Next Steps:
 
       Retrain the model using regularization/dropout units. Retrain using different model/network.
